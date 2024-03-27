@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Wishlist App</title>
+</head>
+<body>
+    <h1>Wishlist App</h1>
+    <form id="wishlistForm">
+      <input type="text" name="item" placeholder="Add to wishlist" required>
+      <button type="submit">Submit</button>
+    </form>
+
+    <script>
+      document.getElementById('wishlistForm').onsubmit = async function(e) {
+        e.preventDefault(); 
+
+        const formData = new FormData(e.target);
+        const data = new URLSearchParams(formData).toString();
+
+        try {
+          const response = await fetch('/wishlist', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: data,
+          });
+
+          if (response.ok) {
+            alert('Wishlist item added');
+            window.location.reload();
+          } else {
+            throw new Error('Failed to add the item');
+          }
+        } catch (error) {
+          alert(error.message);
+        }
+      };
+    </script>
+</body>
+</html>
