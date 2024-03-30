@@ -1,0 +1,8 @@
+
+C:\Users\tazmu\Downloads\wishlist-app\app.js
+  1:17  error  Require statement not part of import statement  @typescript-eslint/no-var-requires
+  2:17  error  Require statement not part of import statement  @typescript-eslint/no-var-requires
+  3:14  error  Require statement not part of import statement  @typescript-eslint/no-var-requires
+
+✖ 3 problems (3 errors, 0 warnings)
+
