@@ -7,34 +7,91 @@
 <body>
     <h1>Wishlist App</h1>
     <form id="wishlistForm">
-      <input type="text" name="item" placeholder="Add to wishlist" required>
-      <button type="submit">Submit</button>
+        <input type="text" id="itemInput" placeholder="Add to wishlist" required>
+        <button type="submit">Add Item</button>
     </form>
 
+    <div id="itemsContainer">
+        <!-- Wishlist items will be displayed here -->
+    </div>
+
     <script>
-      document.getElementById('wishlistForm').onsubmit = async function(e) {
-        e.preventDefault(); 
+        document.getElementById('wishlistForm').onsubmit = async function(e) {
+            e.preventDefault(); 
+            const itemInput = document.getElementById('itemInput');
+            const item = itemInput.value.trim();
+            if(item) {
+                try {
+                    const response = await fetch('/wishlist', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: `item=${encodeURIComponent(item)}`
+                    });
+                    const result = await response.json();
+                    if(response.ok) {
+                        addItemToPage(item, result.id);
+                    } else {
+                        throw new Error(result.error);
+                    }
+                } catch(error) {
+                    alert(error);
+                }
+            }
+            itemInput.value = ''; 
+        };
 
-        const formData = new FormData(e.target);
-        const data = new URLSearchParams(formData).toString();
-
-        try {
-          const response = await fetch('/wishlist', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: data,
-          });
-
-          if (response.ok) {
-            alert('Wishlist item added');
-            window.location.reload();
-          } else {
-            throw new Error('Failed to add the item');
-          }
-        } catch (error) {
-          alert(error.message);
+        function addItemToPage(itemText, id) {
+            const container = document.getElementById('itemsContainer');
+            const itemDiv = document.createElement('div');
+            itemDiv.id = 'item-' + id;
+            itemDiv.innerHTML = `
+                <span>${itemText}</span>
+                <button onclick="updateItem(${id})">Update</button>
+                <button onclick="deleteItem(${id})">Delete</button>
+            `;
+            container.appendChild(itemDiv);
         }
-      };
+
+        async function deleteItem(id) {
+            try {
+              const response = await fetch(`/wishlist/delete/${id}`, { method: 'DELETE' });
+                if(response.ok) {
+                    const itemDiv = document.getElementById('item-' + id);
+                    itemDiv.remove();
+                } else {
+                    throw new Error('Deletion failed');
+                }
+            } catch(error) {
+                alert('Could not delete item: ' + error);
+            }
+        }
+
+        async function updateItem(id) {
+            const newText = prompt("Enter the new item text:");
+            if(newText) {
+                try {
+                  const response = await fetch(`/wishlist/update/${id}`, {
+                  method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: `item=${encodeURIComponent(newText)}`
+                    });
+                    if(response.ok) {
+                        document.querySelector('#item-' + id + ' span').textContent = newText;
+                    } else {
+                        throw new Error('Update failed');
+                    }
+                } catch(error) {
+                    alert('Could not update item: ' + error);
+                }
+            }
+        }
+
+       
+        window.onload = loadItems;
     </script>
 </body>
 </html>
